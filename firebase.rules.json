@@ -1,0 +1,72 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "sessions": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && root.child('users').child(newData.child('userId').val()).exists()",
+        ".validate": "newData.hasChild('userId')"
+      }
+    },
+
+    "users": {
+      ".read": "auth != null",
+      ".indexOn": ["regionCode", "role"],
+      "$userId": {
+        ".write": "auth != null && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('role').val() === 'korwil' && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('regionCode').val() === (data.exists() ? data.child('regionCode').val() : newData.child('regionCode').val()) && (data.exists() ? data.child('role').val() : newData.child('role').val()) === 'driver' && (!data.exists() || (newData.child('regionCode').val() === data.child('regionCode').val() && newData.child('driverCode').val() === data.child('driverCode').val() && newData.child('role').val() === data.child('role').val()))"
+      }
+    },
+
+    "regions": {
+      ".read": "auth != null",
+      "$regionCode": {
+        ".write": "auth != null && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('role').val() === 'korwil' && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('regionCode').val() === $regionCode"
+      }
+    },
+
+    "transactions": {
+      ".read": "auth != null",
+      ".indexOn": ["regionCode", "driverId"],
+      "$txId": {
+        ".write": "auth != null && !data.exists() && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('role').val() === 'driver' && root.child('sessions').child(auth.uid).child('userId').val() === newData.child('driverId').val() && root.child('users').child(newData.child('driverId').val()).child('regionCode').val() === newData.child('regionCode').val()"
+      }
+    },
+
+    "counters": {
+      "$regionCode": {
+        "$driverCode": {
+          "$dateKey": {
+            ".read": "auth != null",
+            ".write": "auth != null && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('regionCode').val() === $regionCode && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('driverCode').val() === $driverCode"
+          }
+        }
+      }
+    },
+
+    "tokenBalances": {
+      ".read": "auth != null",
+      "$driverId": {
+        ".write": "auth != null && ((root.child('sessions').child(auth.uid).child('userId').val() === $driverId && newData.val() === (data.exists() ? data.val() : 0) - 1) || (root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('role').val() === 'korwil' && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('regionCode').val() === root.child('users').child($driverId).child('regionCode').val() && newData.val() > (data.exists() ? data.val() : 0)))"
+      }
+    },
+
+    "tokenLedger": {
+      ".read": "auth != null",
+      "$driverId": {
+        "$entryId": {
+          ".write": "auth != null && !data.exists() && ((root.child('sessions').child(auth.uid).child('userId').val() === $driverId && newData.child('type').val() === 'order' && newData.child('amount').val() === -1) || (root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('role').val() === 'korwil' && newData.child('type').val() === 'topup' && newData.child('amount').val() > 0))"
+        }
+      }
+    },
+
+    "topUps": {
+      ".read": "auth != null",
+      ".indexOn": ["regionCode", "driverId"],
+      "$topUpId": {
+        ".write": "auth != null && (( !data.exists() && root.child('sessions').child(auth.uid).child('userId').val() === newData.child('driverId').val() && newData.child('status').val() === 'pending' && newData.child('proofData').val().length < 500000 ) || ( data.exists() && data.child('status').val() === 'pending' && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('role').val() === 'korwil' && root.child('users').child(root.child('sessions').child(auth.uid).child('userId').val()).child('regionCode').val() === data.child('regionCode').val() && newData.child('driverId').val() === data.child('driverId').val() && newData.child('amount').val() === data.child('amount').val() && newData.child('tokenAmount').val() === data.child('tokenAmount').val() && (newData.child('status').val() === 'approved' || newData.child('status').val() === 'rejected') ))"
+      }
+    }
+  }
+}

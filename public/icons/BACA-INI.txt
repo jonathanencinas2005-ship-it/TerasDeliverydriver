@@ -1,0 +1,10 @@
+Anda perlu menambahkan logo TERAS asli di folder ini sebagai:
+
+  icon-192.png  (192x192 px)
+  icon-512.png  (512x512 px)
+
+Karena logo asli belum pernah diunggah ke percakapan ini, project ini BELUM
+menyertakan file ikon sungguhan -- manifest.json/vite-plugin-pwa sudah
+mengarah ke dua file di atas, tinggal ditaruh di sini sebelum build/deploy.
+Gunakan logo TERAS apa adanya (jangan diubah bentuk/warna/proporsinya sesuai
+requirement), cukup di-export ke ukuran tersebut.
